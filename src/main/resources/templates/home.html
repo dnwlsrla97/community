@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>한국공학대학교 커뮤니티</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 5px; }
+        .post-box { border-bottom: 1px solid #ddd; padding: 15px 0; }
+        
+        .status-badge { background-color: #ff4757; color: white; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; }
+        .status-badge.done { background-color: #a0a0a0; }
+        .status-badge.normal { background-color: #2ed573; } 
+        .category-badge { background-color: #1e90ff; color: white; padding: 3px 8px; border-radius: 5px; font-size: 12px; font-weight: bold; margin-right: 5px; }
+        
+        .btn { display: block; width: 100%; padding: 10px; background-color: #1e90ff; color: white; text-align: center; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; text-decoration: none; margin-top: 20px; box-sizing: border-box; }
+        .user-info-bar { margin-bottom: 15px; padding: 12px; background: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e9ecef; }
+        .filter-btn { padding: 6px 12px; background: #e4e7eb; color: #333; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold; }
+        
+        /* 🌟 카테고리 탭 스타일 목록 */
+        .category-tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab-item { padding: 8px 14px; background-color: #e4e7eb; color: #333; text-decoration: none; border-radius: 20px; font-size: 14px; font-weight: bold; white-space: nowrap; transition: 0.2s; }
+        .tab-item.active { background-color: #1e90ff; color: white; } /* 현재 선택된 탭 효과 */
+        input, textarea, select, button {
+            font-family: inherit; /* 부모 태그(body)의 폰트를 따름 */
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+        .thumbnail-container { 
+            width: 50px; 
+            height: 50px; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            margin-right: 10px; 
+            flex-shrink: 0; 
+        }
+        .thumbnail-container img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🚀 한국공학대학교 커뮤니티</h1>
+    <p style="text-align: center; color: #666; margin-top: 0;">AWS 클라우드와 실시간으로 동기화될 웹 화면입니다.</p>
+    
+    <div class="user-info-bar" style="display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between;">
+    <div>
+        👤 <span th:text="${loginName}">우진</span>님 <a href="/logout">[로그아웃]</a>
+    </div>
+    <div style="display: flex; flex-shrink: 0; gap: 5px;">
+        <a href="/?filter=all" class="filter-btn">🌐 전체</a>
+        <a href="/?filter=my" class="filter-btn">📝 내 글</a>
+        <a href="/?filter=joined" class="filter-btn" style="background: #2ed573; color: white;">✅ 참여중</a>
+    </div>
+</div>
+
+    <div class="category-tabs">
+    <a href="/" class="tab-item" th:classappend="${currentCategory == '전체' || currentCategory == null} ? 'active' : ''">🌐 전체</a>
+    
+    <a th:each="cat : ${categoryList}" 
+       th:href="@{/(category=${cat})}" 
+       class="tab-item" 
+       th:text="${cat}" 
+       th:classappend="${currentCategory == cat} ? 'active' : ''"></a>
+</div>
+    
+    <hr style="border: 0; height: 1px; background: #e9ecef; margin-bottom: 10px;">
+    
+    <div class="post-box" th:each="post : ${posts}">
+        <span class="category-badge" th:text="${post.category}">카테고리</span>
+        <span class="status-badge" 
+              th:classappend="${post.status == '모집완료'} ? 'done' : (${post.status == '일반글'} ? 'normal' : '')" 
+              th:text="${post.status}">모집중</span> 
+        
+        <div style="display: flex; align-items: center; margin-top: 8px;">
+            <div th:if="${post.imagePath != null}" class="thumbnail-container">
+                <img th:src="${post.imagePath}" alt="사진">
+            </div>
+            
+            <a th:href="@{'/post/' + ${post.id}}" th:text="${post.title}" 
+               style="font-size: 18px; color: #1e90ff; text-decoration: none; font-weight: bold;">게시글 제목</a>
+        </div>
+        <p style="color: #555; font-size: 14px; margin: 10px 0 5px 0;" th:text="${post.content}">게시글 내용</p>
+        
+        <div style="display: flex; justify-content: space-between; color: #999; font-size: 12px; margin-top: 5px;">
+            <small>작성자: <span th:text="${post.writer}">20260000</span></small>
+            
+            <small style="color: #ff4757; font-weight: bold; margin-left: 10px;">
+                ❤️ <span th:text="${post.likes != null ? post.likes : 0}">0</span>
+            </small>
+            
+            <div style="display: flex; gap: 10px;">
+                <small th:if="${post.maxParticipants != null}" style="font-weight: bold; color: #333;">
+                    👥 <span th:text="${post.currentParticipants ?: 1}">1</span> / <span th:text="${post.maxParticipants}">5</span>명
+                </small>
+                <small th:if="${post.maxParticipants == null}" style="color: #2ed573; font-weight: bold;">📢 일반글</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="post-box" th:if="${#lists.isEmpty(posts)}" style="text-align: center; color: #999; padding: 30px 0;">
+        선택한 카테고리에 등록된 게시글이 없습니다.
+    </div>
+
+    <a href="/write" class="btn">🚀 새 모집글 작성하기</a>
+</div>
+
+</body>
+</html>

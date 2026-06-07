@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>새 모집글 작성하기</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f4f6f9; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; margin-bottom: 25px; }
+        label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; }
+        .form-group { margin-bottom: 20px; }
+        input[type="text"], input[type="number"], input[type="file"], select, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-size: 15px; }
+        textarea { resize: vertical; height: 150px; }
+        .btn-box { display: flex; gap: 10px; margin-top: 25px; }
+        .btn { flex: 1; padding: 12px; text-align: center; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; text-decoration: none; font-weight: bold; }
+        .btn-submit { background-color: #1e90ff; color: white; }
+        .btn-cancel { background-color: #e4e7eb; color: #333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📝 새 글 작성하기</h1>
+    
+    <form action="/save" method="POST" enctype="multipart/form-data">
+        
+        <div class="form-group">
+            <label>카테고리</label>
+            <select id="selectBox" name="category" onchange="toggleCategory(this)" style="padding: 12px; width: 100%; border: 1px solid #ddd; border-radius: 5px;">
+                <option value="">카테고리를 선택하세요</option>
+                <option th:each="cat : ${categoryList}" th:value="${cat}" th:text="${cat}"></option>
+                <option value="direct">직접 입력하기 (새 카테고리)</option>
+            </select>
+
+            <div id="inputBox" style="display:none; margin-top: 10px;">
+                <input type="text" id="manualInput" placeholder="새 카테고리명을 입력하세요">
+                <button type="button" onclick="showSelect()" style="margin-top: 5px; width: 100%; padding: 10px; background: #e4e7eb; border: none; cursor: pointer;">
+                    ▲ 목록에서 다시 선택하기
+                </button>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>제목</label>
+            <input type="text" name="title" required>
+        </div>
+
+        <div class="form-group">
+            <label>모집 정원 (선택)</label>
+            <input type="number" name="maxParticipants" placeholder="예: 5">
+        </div>
+
+        <div class="form-group">
+            <label>포스터/그림 첨부</label>
+            <input type="file" name="imageFile" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>내용</label>
+            <textarea name="content" required></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-submit">등록하기</button>
+    </form>
+</div>
+
+<script>
+    function toggleCategory(select) {
+        const inputBox = document.getElementById('inputBox');
+        const selectBox = document.getElementById('selectBox');
+        const manualInput = document.getElementById('manualInput');
+
+        if (select.value === 'direct') {
+            // 목록 숨기고 입력창 보이기
+            selectBox.style.display = 'none';
+            selectBox.name = ""; 
+            
+            inputBox.style.display = 'block';
+            manualInput.name = "category"; // 서버로 보낼 이름 설정
+            manualInput.focus();
+        }
+    }
+
+    function showSelect() {
+        const inputBox = document.getElementById('inputBox');
+        const selectBox = document.getElementById('selectBox');
+        const manualInput = document.getElementById('manualInput');
+
+        // 입력창 숨기고 목록 다시 보이기
+        inputBox.style.display = 'none';
+        manualInput.name = ""; 
+        
+        selectBox.style.display = 'block';
+        selectBox.value = ""; 
+        selectBox.name = "category"; // 서버로 보낼 이름 설정
+    }
+</script>
+
+</body>
+</html>
