@@ -95,7 +95,9 @@
                     </div>
                     <p th:text="${comment.content}" style="margin: 0;"></p>
                 </div>
-                <form th:action="@{/post/{id}/comment/{commentId}/delete(id=${post.id}, commentId=${comment.id})}" method="post">
+                <form th:if="${comment.user.studentId == loginId}" 
+                      th:action="@{/post/{id}/comment/{commentId}/delete(id=${post.id}, commentId=${comment.id})}" 
+                      method="post">
                     <button type="submit" style="color: #ff6b6b; background: none; border: none; cursor: pointer; font-size: 12px;">삭제</button>
                 </form>
             </div>

@@ -54,16 +54,11 @@ public class HomeController {
         }
         
         if (category != null && !category.isEmpty() && !"전체".equals(category)) {
-            posts = posts.stream()
-                    .filter(post -> category.equals(post.getCategory()))
-                    .collect(Collectors.toList());
+            posts = posts.stream().filter(post -> category.equals(post.getCategory())).collect(Collectors.toList());
         }
         
         List<String> categoryList = postService.getAllPosts().stream()
-                .map(Post::getCategory)
-                .filter(c -> c != null)
-                .distinct()
-                .collect(Collectors.toList());
+                .map(Post::getCategory).filter(c -> c != null && !c.isEmpty()).distinct().collect(Collectors.toList());
         
         model.addAttribute("posts", posts);
         model.addAttribute("categoryList", categoryList);
@@ -110,10 +105,7 @@ public class HomeController {
         if (loginId == null) return "login";
         model.addAttribute("loginId", loginId);
         List<String> categoryList = postService.getAllPosts().stream()
-                .map(Post::getCategory)
-                .filter(c -> c != null && !c.isEmpty())
-                .distinct()
-                .collect(Collectors.toList());
+                .map(Post::getCategory).filter(c -> c != null && !c.isEmpty()).distinct().collect(Collectors.toList());
         model.addAttribute("categoryList", categoryList);
         return "form";
     }
@@ -159,7 +151,7 @@ public class HomeController {
         if (post == null) return "redirect:/";
 
         model.addAttribute("post", post);
-        model.addAttribute("loginId", loginId);
+        model.addAttribute("loginId", loginId); // detail.html에서 댓글 삭제 버튼 제어용
         model.addAttribute("likesCount", likeService.countLikes(post));
         model.addAttribute("isLiked", userRepository.findById(loginId).map(u -> likeService.isLiked(u, post)).orElse(false));
         model.addAttribute("comments", commentService.getCommentsByPost(post));
@@ -190,21 +182,26 @@ public class HomeController {
     public String editForm(@PathVariable("id") Long id, Model model, HttpSession session) {
         String loginId = (String) session.getAttribute("loginId");
         if (loginId == null) return "login";
+        
         Post post = postRepository.findById(id).orElse(null);
+        List<String> categoryList = postService.getAllPosts().stream()
+                .map(Post::getCategory).filter(c -> c != null && !c.isEmpty()).distinct().collect(Collectors.toList());
+        
         model.addAttribute("post", post);
+        model.addAttribute("categoryList", categoryList);
         return "edit";
     }
 
     @PostMapping("/post/{id}/edit")
     public String editPost(@PathVariable("id") Long id, 
                            @ModelAttribute Post post, 
+                           @RequestParam(value = "category") String category, 
                            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
         
-        Post existingPost = postRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
-
+        Post existingPost = postRepository.findById(id).orElseThrow();
         existingPost.setTitle(post.getTitle());
         existingPost.setContent(post.getContent());
+        existingPost.setCategory(category); 
 
         if (imageFile != null && !imageFile.isEmpty()) {
             try {
@@ -236,6 +233,7 @@ public class HomeController {
     public String deleteComment(@PathVariable("id") Long id, @PathVariable("commentId") Long commentId, HttpSession session) {
         String loginId = (String) session.getAttribute("loginId");
         if (loginId == null) return "login";
+        // 댓글 작성자 확인 후 삭제
         userRepository.findById(loginId).ifPresent(user -> commentService.deleteComment(commentId, user));
         return "redirect:/post/" + id;
     }

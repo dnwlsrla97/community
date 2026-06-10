@@ -47,4 +47,12 @@ public class Post {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+    public void update(String title, String content, String category, String imagePath) {
+    this.title = title;
+    this.content = content;
+    this.category = category; // 카테고리 업데이트 추가
+    if (imagePath != null && !imagePath.isEmpty()) {
+        this.imagePath = imagePath;
+    }
+}
 }
